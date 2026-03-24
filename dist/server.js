@@ -9,6 +9,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const diagnosis_1 = __importDefault(require("./routes/diagnosis"));
 const history_1 = __importDefault(require("./routes/history"));
 const symptoms_1 = __importDefault(require("./routes/symptoms"));
+const initDb_1 = require("./scripts/initDb");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = parseInt(process.env.PORT ?? '4000', 10);
@@ -36,15 +37,22 @@ app.use((_req, res) => {
     res.status(404).json({ error: 'Not found' });
 });
 // ---------------------------------------------------------------------------
-// Start
+// Start — run DB migration first, then open the port
 // ---------------------------------------------------------------------------
-app.listen(PORT, () => {
-    console.log(`[MediCheck] Server running on http://localhost:${PORT}`);
-    console.log(`[MediCheck] Endpoints:`);
-    console.log(`  GET  /health`);
-    console.log(`  GET  /api/symptoms`);
-    console.log(`  POST /api/diagnosis`);
-    console.log(`  GET  /api/history/:sessionId`);
+(0, initDb_1.initDb)()
+    .then(() => {
+    app.listen(PORT, () => {
+        console.log(`[MediCheck] Server running on http://localhost:${PORT}`);
+        console.log(`[MediCheck] Endpoints:`);
+        console.log(`  GET  /health`);
+        console.log(`  GET  /api/symptoms`);
+        console.log(`  POST /api/diagnosis`);
+        console.log(`  GET  /api/history/:sessionId`);
+    });
+})
+    .catch((err) => {
+    console.error('[MediCheck] Startup failed — could not initialise database:', err.message);
+    process.exit(1);
 });
 exports.default = app;
 //# sourceMappingURL=server.js.map
