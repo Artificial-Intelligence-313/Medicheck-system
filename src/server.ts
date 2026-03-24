@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import diagnosisRouter from './routes/diagnosis';
 import historyRouter  from './routes/history';
 import symptomsRouter from './routes/symptoms';
+import { initDb } from './scripts/initDb';
 
 dotenv.config();
 

@@ -5,12 +5,12 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Resolve from project root so this works both from src/ (ts-node) and dist/ (node)
+// Works from both src/ (ts-node) and dist/ (node) since cwd is always the project root
 const SQL_PATH = path.resolve(process.cwd(), 'src/models/schema.sql');
 
-async function initDb(): Promise<void> {
+export async function initDb(): Promise<void> {
   if (!process.env.DATABASE_URL) {
-    console.error('ERROR: DATABASE_URL is not set. Copy .env.example to .env and fill it in.');
+    console.error('ERROR: DATABASE_URL is not set.');
     process.exit(1);
   }
 
@@ -22,16 +22,17 @@ async function initDb(): Promise<void> {
   try {
     const sql = readFileSync(SQL_PATH, 'utf8');
     await pool.query(sql);
-    console.log('✓ Database initialised successfully.');
-    console.log('  Tables: diagnoses, symptoms_catalog');
-    console.log('  Symptoms catalog seeded with all 22 symptoms.');
+    console.log('[MediCheck] Database initialised — tables and seed data ready.');
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error('ERROR: Database init failed:', message);
-    process.exit(1);
+    console.error('[MediCheck] Database init failed:', message);
+    throw err;
   } finally {
     await pool.end();
   }
 }
 
-initDb();
+// Auto-run when executed directly: ts-node src/scripts/initDb.ts  or  node dist/scripts/initDb.js
+if (require.main === module) {
+  initDb().catch(() => process.exit(1));
+}
