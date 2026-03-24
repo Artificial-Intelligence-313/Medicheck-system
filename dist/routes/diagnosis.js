@@ -43,8 +43,8 @@ router.post('/', async (req, res) => {
         res.status(200).json(result);
     }
     catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        console.error('[POST /api/diagnosis] Error:', message);
+        const message = err instanceof Error ? (err.message || err.toString()) : String(err);
+        console.error('[POST /api/diagnosis] Error:', message, err);
         res.status(500).json({ error: 'Diagnosis failed.', detail: message });
     }
 });
