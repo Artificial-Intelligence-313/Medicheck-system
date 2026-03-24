@@ -20,7 +20,8 @@
 
 :- module(inference_engine, [
     diagnose/3,
-    run_forward_chaining/4
+    run_forward_chaining/4,
+    best_possible/4
 ]).
 
 :- use_module(knowledge_base).
@@ -123,17 +124,18 @@ all_present([H|T], SymptomSet) :-
 % ---------------------------------------------------------------------------
 select_best_diagnosis(DerivedFacts, FiredRules, SymptomSet, Result) :-
     % Try high confidence first
-    (   member(derived(Disease, high, RuleId), DerivedFacts)
+    (   member(derived(Disease, high, _), DerivedFacts)
     ->  Confidence = high,
         filter_facts_for(Disease, DerivedFacts, DiseaseFacts),
         collect_fired_for_disease(Disease, FiredRules, DiseaseFiredRules)
     ;   % Then medium
-        member(derived(Disease, medium, RuleId), DerivedFacts)
+        member(derived(Disease, medium, _), DerivedFacts)
     ->  Confidence = medium,
         filter_facts_for(Disease, DerivedFacts, DiseaseFacts),
         collect_fired_for_disease(Disease, FiredRules, DiseaseFiredRules)
-    ;   % Then possible
-        member(derived(Disease, possible, RuleId), DerivedFacts),
+    ;   % Then possible — rank by number of matched symptoms so the most
+        % relevant disease wins when symptoms from multiple categories are selected
+        best_possible(DerivedFacts, FiredRules, SymptomSet, Disease),
         Confidence = possible,
         filter_facts_for(Disease, DerivedFacts, DiseaseFacts),
         collect_fired_for_disease(Disease, FiredRules, DiseaseFiredRules)
@@ -232,3 +234,22 @@ confidence_label(high,     'HIGH').
 confidence_label(medium,   'MEDIUM').
 confidence_label(possible, 'POSSIBLE').
 confidence_label(none,     'NONE').
+
+
+% ---------------------------------------------------------------------------
+% best_possible(+DerivedFacts, +FiredRules, +SymptomSet, -BestDisease)
+%
+% Among all POSSIBLE-confidence derived facts, picks the disease whose fired
+% rules cover the most unique matched symptoms.  This ensures that when a
+% user selects symptoms from multiple categories, the disease with the
+% strongest symptom overlap wins rather than whichever appears first.
+% ---------------------------------------------------------------------------
+best_possible(DerivedFacts, FiredRules, SymptomSet, BestDisease) :-
+    findall(Count-Disease,
+        (   member(derived(Disease, possible, _), DerivedFacts),
+            collect_fired_for_disease(Disease, FiredRules, DRules),
+            collect_matched_symptoms(DRules, SymptomSet, Matched),
+            length(Matched, Count)
+        ),
+        Scored),
+    sort(0, @>=, Scored, [_-BestDisease|_]).

@@ -109,6 +109,12 @@ rule(malaria_possible,
      possible,
      [fever, chills, sweating, headache]).
 
+% Weak rule: minimum malaria indicators (gatekeeper + one symptom)
+rule(malaria_weak,
+     malaria,
+     possible,
+     [fever, chills]).
+
 % --- DIARRHOEA RULES ---
 rule(diarrhoea_high,
      diarrhoea,
@@ -125,6 +131,17 @@ rule(diarrhoea_possible,
      possible,
      [loose_stools, loss_of_appetite, bloating]).
 
+% Weak rules: minimum diarrhoea indicators
+rule(diarrhoea_weak,
+     diarrhoea,
+     possible,
+     [loose_stools, stomach_cramps]).
+
+rule(diarrhoea_weak2,
+     diarrhoea,
+     possible,
+     [loose_stools, mild_fever]).
+
 % --- HIV/AIDS RULES ---
 rule(hiv_high,
      'HIV/AIDS',
@@ -140,6 +157,17 @@ rule(hiv_possible,
      'HIV/AIDS',
      possible,
      [oral_thrush, weight_loss, night_sweats]).
+
+% Weak rules: minimum HIV/AIDS indicators (duration exclusion still applies)
+rule(hiv_weak,
+     'HIV/AIDS',
+     possible,
+     [persistent_fatigue, weight_loss]).
+
+rule(hiv_weak2,
+     'HIV/AIDS',
+     possible,
+     [night_sweats, persistent_fatigue]).
 
 % ---------------------------------------------------------------------------
 % EXCLUSION RULES — exclusion_rule(Disease, RequiredAbsentSymptom)
