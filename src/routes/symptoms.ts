@@ -16,8 +16,8 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
     const symptoms = await getSymptoms();
     res.status(200).json(symptoms);
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error('[GET /api/symptoms] Error:', message);
+    const message = err instanceof Error ? (err.message || err.toString()) : String(err);
+    console.error('[GET /api/symptoms] Error:', message, err);
     res.status(500).json({ error: 'Failed to retrieve symptoms.', detail: message });
   }
 });

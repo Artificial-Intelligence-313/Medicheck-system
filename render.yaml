@@ -2,7 +2,7 @@ services:
   - type: web
     name: medicheck-system
     runtime: node
-    buildCommand: pnpm install && pnpm run build
+    buildCommand: pnpm install && pnpm run build && node dist/scripts/initDb.js
     startCommand: pnpm start
     envVars:
       - key: NODE_ENV

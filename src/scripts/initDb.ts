@@ -5,7 +5,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const SQL_PATH = path.resolve(__dirname, '../models/schema.sql');
+// Resolve from project root so this works both from src/ (ts-node) and dist/ (node)
+const SQL_PATH = path.resolve(process.cwd(), 'src/models/schema.sql');
 
 async function initDb(): Promise<void> {
   if (!process.env.DATABASE_URL) {
@@ -13,7 +14,10 @@ async function initDb(): Promise<void> {
     process.exit(1);
   }
 
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  });
 
   try {
     const sql = readFileSync(SQL_PATH, 'utf8');
