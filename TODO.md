@@ -121,6 +121,8 @@ Required test scenarios to implement (with Jest + supertest for API tests, or di
 | `invalid input syntax for type uuid` when client sends non-UUID session_id (e.g. `"test-session-123"`) | `diagnosisService.ts` | Added UUID regex validation — invalid values fall back to `uuidv4()` | **Fixed 2026-03-24** |
 | `@types/jest` missing caused `tsc` build failure on test files | `tsconfig.json` | Excluded `src/tests/**/*` from main build; installed `@types/jest` | **Fixed 2026-03-24** |
 | Render deploy failing: `ts-node: not found` — build ran `pnpm install` only, start ran `pnpm dev` (uses ts-node devDep) | Render config | Added `render.yaml`: build = `pnpm install && pnpm run build`, start = `pnpm start` | **Fixed 2026-03-24** |
+| `GET /api/symptoms` returning blank error — `initDb` never ran on Render so tables don't exist; `__dirname` in compiled `initDb.js` pointed to `dist/scripts/` not `src/models/`; no SSL on initDb pool | `initDb.ts`, `render.yaml` | Fixed SQL path to use `process.cwd()`; added SSL to initDb pool; added `node dist/scripts/initDb.js` to Render build command | **Fixed 2026-03-24** |
+| Error logging swallowing blank `.message` on pg errors | all route files | Changed to `err.message \|\| err.toString()` + log full `err` object | **Fixed 2026-03-24** |
 
 | Issue | Location | Severity | Status |
 |-------|----------|----------|--------|
